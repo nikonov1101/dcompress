@@ -1,29 +1,47 @@
-// dcompress_test.go
-
 package dcompress
 
 import (
-	"fmt"
-	"io/ioutil"
-	"log"
+	"archive/tar"
+	"io"
 	"os"
 	"testing"
-
-	"github.com/hotei/mdr"
 )
 
-func Test_000(t *testing.T) { // template
-	if false {
-		t.Errorf("print fail, but keep testing")
-	}
-	fmt.Printf("Test_0000 (%d)\n")
+func TestReader(t *testing.T) {
+	testOpenZ(t, "testdata/bsd.pax.Z")
+	testOpenZ(t, "testdata/gnu.pax.Z")
 }
 
-//
-var filePair1 = [2]string{"testdata/kermit.Z",
-	"d61611d13775c1f3a83675e81afcadfc4352b11e0f39f7c928bad62d25675b66"}
+func testOpenZ(t *testing.T, p string) {
+	fd, err := os.Open(p)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-var filePairs = [][2]string{filePair1 /*, filePair2,  filePair3*/}
+	r, err := NewReader(fd)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-func Test_001(t *testing.T) {
+	tr := tar.NewReader(r)
+	n := 0
+	for {
+		hdr, err := tr.Next()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			t.Fatal(err)
+		}
+
+		n++
+
+		if len(hdr.Name) == 0 {
+			t.Fatal("file name must not be empty")
+		}
+	}
+
+	if n != 11 {
+		t.Fatalf("file count mismatch: %d != 11", n)
+	}
 }
