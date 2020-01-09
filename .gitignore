@@ -1,2 +1,12 @@
 *~
-/testdata
+.DS_Store
+dbg
+.idea/
+
+tmp/
+.vagrant/
+Vagrantfile
+*.log
+*.heap
+*.pprof
+
